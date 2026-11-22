@@ -1,11 +1,24 @@
 #!/usr/bin/env bash
-# Gera o vídeo VALMONT Gênese do zero: logotipo -> trilha -> vídeo final.
+# Gera os dois vídeos VALMONT do zero.
+#   ./build.sh          -> os dois vídeos
+#   ./build.sh genese   -> só o vídeo da Coleção Gênese
+#   ./build.sh natal    -> só o vídeo de Natal
 # Requisitos: python3 com numpy e pillow, e ffmpeg (libx264 + aac).
 set -euo pipefail
 cd "$(dirname "$0")"
+alvo="${1:-todos}"
 python3 src/logo.py
-python3 src/music.py
-python3 src/render.py "$@"
-ffmpeg -hide_banner -loglevel error -ss 14.9 -i output/valmont-genese-reels-1080x1920.mp4 \
-  -frames:v 1 -q:v 2 -y output/capa-1080x1920.jpg
-echo "Pronto: output/valmont-genese-reels-1080x1920.mp4"
+if [[ "$alvo" == "todos" || "$alvo" == "genese" ]]; then
+  python3 src/music.py
+  python3 src/render.py
+  ffmpeg -hide_banner -loglevel error -ss 14.9 -i output/valmont-genese-reels-1080x1920.mp4 \
+    -frames:v 1 -q:v 2 -y output/capa-1080x1920.jpg
+  echo "Pronto: output/valmont-genese-reels-1080x1920.mp4"
+fi
+if [[ "$alvo" == "todos" || "$alvo" == "natal" ]]; then
+  python3 src/music_natal.py
+  python3 src/render_natal.py
+  ffmpeg -hide_banner -loglevel error -ss 14.9 -i output/valmont-natal-presente-1080x1920.mp4 \
+    -frames:v 1 -q:v 2 -y output/capa-natal-1080x1920.jpg
+  echo "Pronto: output/valmont-natal-presente-1080x1920.mp4"
+fi

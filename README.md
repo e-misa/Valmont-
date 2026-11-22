@@ -1,7 +1,11 @@
-# VALMONT Brasil — Coleção Gênese · vídeo para Reels, Stories, TikTok e Facebook Ads
+# VALMONT Brasil — vídeos para Reels, Stories, TikTok e Facebook Ads
 
-**Arquivo final:** `output/valmont-genese-reels-1080x1920.mp4`
-**Capa sugerida:** `output/capa-1080x1920.jpg`
+| Vídeo | Arquivo | Capa |
+|---|---|---|
+| Coleção Gênese (institucional) | `output/valmont-genese-reels-1080x1920.mp4` | `output/capa-1080x1920.jpg` |
+| Natal: "Presenteie com elegância" | `output/valmont-natal-presente-1080x1920.mp4` | `output/capa-natal-1080x1920.jpg` |
+
+Os dois vídeos têm a mesma especificação técnica:
 
 | Especificação | Valor |
 |---|---|
@@ -24,7 +28,9 @@ das fotos originais de estúdio (`assets/fotos/`), só com movimento de câmera
 - o logotipo do cartão final foi extraído da tampa da caixa real
   (`assets/fotos/embalagem-colecao.jpg`, ver `src/logo.py`), sem redesenho.
 
-## Roteiro (sincronizado com a trilha, 120 BPM)
+## Vídeo 1: Coleção Gênese
+
+### Roteiro (sincronizado com a trilha, 120 BPM)
 
 | Tempo | Cena | Texto na tela |
 |---|---|---|
@@ -38,9 +44,34 @@ Todo o texto comercial fica na área segura central (entre y = 270 e y = 1250 px
 longe dos botões e legendas do Instagram, do TikTok e do Facebook. O vídeo é
 compreensível sem som.
 
+## Vídeo 2: Natal, "Presenteie com elegância"
+
+Clima de presente e de festas: papel de presente bordô com a montanha VALMONT
+estampada em dourado, fitas de cetim, luzes desfocadas quentes e tipografia
+caligráfica. Os relógios continuam sendo os pixels das fotos originais. O fundo
+cinza de estúdio é trocado por um cenário marfim e dourado por meio de uma
+máscara do produto (`make_sil` em `src/render_natal.py`). Dentro do relógio
+(caixa, mostrador, ponteiros, logo, pulseira e coroa) nenhum pixel muda. As
+transições empurram um relógio inteiro para fora enquanto o próximo entra, com
+a fita na emenda, para que dois modelos nunca apareçam misturados no mesmo quadro.
+
+| Tempo | Cena | Texto na tela |
+|---|---|---|
+| 0–2 s | O papel de presente se abre de baixo para cima e revela o **Gold** em close | NESTE NATAL · *Presenteie com elegância.* |
+| 2–6 s | Os quatro modelos sobre fundo marfim com luzes de Natal, trocados por fita dourada a cada tempo | Clássico · Silver / Sofisticado · Gold / Delicado · Rosé / Marcante · Black |
+| 6–8 s | Foto real das quatro peças nas caixas VALMONT | O PRESENTE PERFEITO · *Na caixa VALMONT, pronto para presentear.* |
+| 8–10 s | Os quatro modelos em cartões, "embrulhados" por fitas douradas, com o preço na fita | COLEÇÃO GÊNESE · **R$ 180,00** |
+| 10–12,5 s | As fitas saem e o painel bordô abre com a oferta | *Um para presentear. Outro para você.* · **10% OFF** · na compra de 2 ou mais relógios |
+| 12,5–15 s | Assinatura com os 4 relógios visíveis | VALMONT · *A simplicidade é a base da elegância.* · *Boas Festas* · **PRESENTEIE AGORA** |
+
+Trilha original de Natal (`src/music_natal.py`): 120 BPM, em Ré maior, com
+glockenspiel, pizzicato, guizos e cordas, e um acorde de Sol menor que dá a
+nostalgia natalina. A melodia é composta para o projeto e não reproduz nenhuma
+canção existente.
+
 ## Trilha sonora
 
-A trilha (`src/music.py`) foi **composta e sintetizada neste projeto**, nota por nota,
+A trilha do vídeo 1 (`src/music.py`) foi **composta e sintetizada neste projeto**, nota por nota,
 sem samples nem loops de terceiros. Tem 120 BPM, em Ré menor com resolução em Fá maior,
 e usa pad, arpejo de piano elétrico, "tique-taque" de relógio, kick, estalos, baixo,
 impactos nos cortes e whooshes nas transições. Por ser original, pode ser usada
@@ -54,18 +85,21 @@ arquivo de áudio: `python3 src/render.py --audio caminho/da/musica.wav`.
 Requisitos: `python3` com `numpy` e `pillow`, e `ffmpeg`.
 
 ```bash
-./build.sh                                   # logotipo -> trilha -> vídeo -> capa
-python3 src/render.py --still 1.0 8.5 14.9   # só exporta quadros PNG para conferência (em build/)
+./build.sh                                   # os dois vídeos (ou: ./build.sh genese | ./build.sh natal)
+python3 src/render.py --still 1.0 8.5 14.9   # quadros PNG de conferência do vídeo 1 (em build/)
+python3 src/render_natal.py --still 0.5 9    # quadros PNG de conferência do vídeo de Natal
 ```
 
 ## Estrutura
 
 ```
 assets/fotos/   fotos originais dos produtos (fonte obrigatória dos relógios)
-assets/fonts/   Cormorant Garamond e Montserrat (SIL Open Font License, uso comercial livre)
+assets/fonts/   Cormorant Garamond, Montserrat e Pinyon Script (SIL Open Font License, uso comercial livre)
 assets/marca/   máscara do logotipo extraída da embalagem real
 src/logo.py     extração do logotipo
-src/music.py    composição da trilha original
-src/render.py   montagem dos quadros e codificação do MP4
+src/music.py           trilha original do vídeo 1
+src/render.py          vídeo 1 (Coleção Gênese)
+src/music_natal.py     trilha original de Natal
+src/render_natal.py    vídeo 2 (Natal)
 output/         vídeo final e capa
 ```
