@@ -5,6 +5,12 @@
 | Coleção Gênese (institucional) | `output/valmont-genese-reels-1080x1920.mp4` | `output/capa-1080x1920.jpg` |
 | Natal: "Presenteie com elegância" | `output/valmont-natal-presente-1080x1920.mp4` | `output/capa-natal-1080x1920.jpg` |
 
+**Foto para post (feed 4:5):** `output/post-natal-flatlay-1080x1350.jpg`. É um flat lay
+(vista de cima) dos quatro modelos sobre uma fita de veludo bordô. Os relógios são os
+pixels das fotos originais, todos no mesmo tamanho real e só girados no plano da mesa.
+A sombra de estúdio de cada foto foi transferida para a nova superfície e as bordas
+foram descontaminadas do cinza do estúdio. Para gerar de novo: `python3 src/post_natal.py`.
+
 Os dois vídeos têm a mesma especificação técnica:
 
 | Especificação | Valor |
@@ -101,5 +107,6 @@ src/music.py           trilha original do vídeo 1
 src/render.py          vídeo 1 (Coleção Gênese)
 src/music_natal.py     trilha original de Natal
 src/render_natal.py    vídeo 2 (Natal)
+src/post_natal.py      foto flat lay de Natal para o feed
 output/         vídeo final e capa
 ```
