@@ -5,6 +5,7 @@
 | Coleção Gênese (institucional) | `output/valmont-genese-reels-1080x1920.mp4` | `output/capa-1080x1920.jpg` |
 | Natal: "Presenteie com elegância" | `output/valmont-natal-presente-1080x1920.mp4` | `output/capa-natal-1080x1920.jpg` |
 | Campanha de vendas, 18 s (filmagem real) | `output/valmont-campanha-18s-1080x1920.mp4` | `output/capa-campanha-1080x1920.jpg` |
+| Campanha de vendas, 18 s, **versão 2** (linho bege) | `output/valmont-campanha-18s-v2-1080x1920.mp4` | `output/capa-campanha-v2-1080x1920.jpg` |
 
 **Foto para post (feed 4:5):** `output/post-natal-flatlay-1080x1350.jpg`. É um flat lay
 (vista de cima) dos quatro modelos sobre uma fita de veludo bordô. Os relógios são os
@@ -104,6 +105,18 @@ filmagem foi escolhido para a caixa do relógio nunca passar por baixo delas.
 
 Não há relógio no pulso porque não existe filmagem ou foto real disso. Também não há
 preço "de/por", contagem regressiva nem prazo, já que nenhum deles foi informado.
+
+### Versão 2 (mais fiel ao briefing)
+
+Mesma filmagem real, roteiro e textos. Muda o seguinte:
+- os closes e as composições ficam sobre **tecido de linho bege** (`fl.linen`, com trama de fios
+  irregulares e dobras suaves) em vez de pedra;
+- os macros têm **profundidade de campo** de lente macro: nítido no mostrador e no logotipo,
+  com desfoque suave e crescente só nas bordas do quadro (`fl.depth_of_field`);
+- o plano do Gold sobre a mesa (4–5 s) faz uma **aproximação suave** do mostrador frontal;
+- a mão real entra aos 1,2 s, logo depois do macro de abertura.
+
+Para gerar: `python3 src/render_campanha.py --versao 2` (ou `./build.sh campanha`, que gera as duas).
 
 ## Trilha sonora
 

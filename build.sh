@@ -26,7 +26,10 @@ fi
 if [[ "$alvo" == "todos" || "$alvo" == "campanha" ]]; then
   python3 src/music_campanha.py
   python3 src/render_campanha.py
+  python3 src/render_campanha.py --versao 2
   ffmpeg -hide_banner -loglevel error -ss 17.9 -i output/valmont-campanha-18s-1080x1920.mp4 \
     -frames:v 1 -q:v 2 -y output/capa-campanha-1080x1920.jpg
-  echo "Pronto: output/valmont-campanha-18s-1080x1920.mp4"
+  ffmpeg -hide_banner -loglevel error -ss 17.9 -i output/valmont-campanha-18s-v2-1080x1920.mp4 \
+    -frames:v 1 -q:v 2 -y output/capa-campanha-v2-1080x1920.jpg
+  echo "Pronto: output/valmont-campanha-18s-1080x1920.mp4 e versão 2"
 fi

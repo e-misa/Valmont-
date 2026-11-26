@@ -61,16 +61,37 @@ SHOTS = [
 # Cortes secos no tempo da música: nunca há dois relógios sobrepostos no mesmo quadro.
 
 
+# Versão 2: mais fiel ao briefing (linho bege, profundidade de campo nos macros,
+# aproximação suave no mostrador do Gold). Ative com --versao 2.
+SHOTS_V2 = [
+    (0.0, 1.2, "still", dict(key="macro_gold_linho", z=(1.00, 1.08), c=(0.5, 0.50))),
+    (1.2, 2.0, "clip", dict(src=7.20, z=(1.12, 1.15), c=(0.50, 0.50), label=None)),
+    (2.0, 3.0, "clip", dict(src=0.45, z=(1.10, 1.14), c=(0.50, 0.55), label="SILVER")),
+    (3.0, 4.0, "clip", dict(src=25.80, z=(1.12, 1.17), c=(0.52, 0.56), label="SILVER")),
+    (4.0, 5.0, "clip", dict(src=31.20, z=(1.12, 1.30), c=(0.50, 0.50), label="GOLD")),
+    (5.0, 6.0, "clip", dict(src=9.40, z=(1.15, 1.20), c=(0.52, 0.62), label="GOLD")),
+    (6.0, 7.0, "clip", dict(src=19.55, z=(1.10, 1.14), c=(0.50, 0.58), label="ROSÉ")),
+    (7.0, 8.0, "clip", dict(src=23.45, z=(1.12, 1.16), c=(0.50, 0.46), label="ROSÉ")),
+    (8.0, 9.0, "clip", dict(src=14.05, z=(1.10, 1.15), c=(0.52, 0.58), label="BLACK")),
+    (9.0, 10.0, "still", dict(key="macro_black_linho", z=(1.00, 1.07), c=(0.5, 0.47), label="BLACK")),
+    (10.0, 13.0, "still", dict(key="four_linho", z=(1.00, 1.05), c=(0.5, 0.5))),
+    (13.0, 16.0, "still", dict(key="duo", z=(1.00, 1.05), c=(0.5, 0.36))),
+    (16.0, 18.0, "still", dict(key="four_linho", z=(1.05, 1.08), c=(0.5, 0.5))),
+]
+
+
 # --------------------------------------------------------------- filmagem
 def load_footage():
     """Extrai só os trechos usados (mais folga para os dissolves)."""
     cache = BUILD / "campanha_footage.npz"
+    clips = {}
     if cache.exists():
         d = np.load(cache)
-        return {float(k): d[k] for k in d.files}
-    clips = {}
+        clips = {float(k): d[k] for k in d.files}
+        if all(p["src"] in clips for _a, _b, kind, p in SHOTS if kind == "clip"):
+            return clips
     for _a, _b, kind, p in SHOTS:
-        if kind != "clip":
+        if kind != "clip" or p["src"] in clips:
             continue
         start = max(0.0, p["src"] - 0.1)
         n = int(round((1.0 + 0.3) * FPS))
@@ -94,8 +115,9 @@ def init():
         return
     fl.init()
     CLIPS.update(load_footage())
-    for key in ("macro_gold", "macro_black", "four", "duo"):
-        STILLS[key] = still(key)
+    for _a, _b, kind, p in SHOTS:
+        if kind == "still" and p["key"] not in STILLS:
+            STILLS[p["key"]] = still(p["key"])
 
 
 def clip_frame(p, tl, z, c):
@@ -128,6 +150,23 @@ def still(key):
     elif key == "four":
         w, h = 1188, 2112
         c = fl.stone(w, h, seed=21)
+        sx = w / 1080
+        for name, (x, y), a in [("silver", (290, 420), -4), ("gold", (800, 470), 3),
+                                ("rose", (285, 1500), 2.5), ("black", (795, 1450), -3)]:
+            c = fl.place(c, name, (x * sx, y * sx), 380 * sx, a)
+    elif key == "macro_gold_linho":
+        w, h = 1296, 2304
+        c = fl.linen(w, h, seed=11)
+        c = fl.place(c, "gold", (w * 0.5, h * 0.60), 1130, -8.0)
+        c = fl.depth_of_field(c, (w * 0.5, h * 0.60), 600, 3.2)
+    elif key == "macro_black_linho":
+        w, h = 1296, 2304
+        c = fl.linen(w, h, seed=13)
+        c = fl.place(c, "black", (w * 0.5, h * 0.56), 1060, 7.0)
+        c = fl.depth_of_field(c, (w * 0.5, h * 0.56), 560, 3.2)
+    elif key == "four_linho":
+        w, h = 1188, 2112
+        c = fl.linen(w, h, seed=21)
         sx = w / 1080
         for name, (x, y), a in [("silver", (290, 420), -4), ("gold", (800, 470), 3),
                                 ("rose", (285, 1500), 2.5), ("black", (795, 1450), -3)]:
@@ -329,12 +368,18 @@ def main():
     ap.add_argument("--out", default=str(OUTPUT / "valmont-campanha-18s-1080x1920.mp4"))
     ap.add_argument("--audio", default=str(BUILD / "trilha_campanha.wav"))
     ap.add_argument("--workers", type=int, default=4)
+    ap.add_argument("--versao", type=int, default=1, choices=(1, 2))
     args = ap.parse_args()
+    global SHOTS
+    if args.versao == 2:
+        SHOTS = SHOTS_V2
+        if args.out == str(OUTPUT / "valmont-campanha-18s-1080x1920.mp4"):
+            args.out = str(OUTPUT / "valmont-campanha-18s-v2-1080x1920.mp4")
     init()
     if args.still is not None:
         for ts in args.still:
             arr = np.frombuffer(render_frame(int(round(ts * FPS))), np.uint8).reshape(H, W, 3)
-            pth = BUILD / f"camp_{ts:05.2f}.png"
+            pth = BUILD / f"camp_v{args.versao}_{ts:05.2f}.png"
             Image.fromarray(arr).save(pth)
             print(pth)
         return

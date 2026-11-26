@@ -51,6 +51,69 @@ def stone(w, h, seed=7, base_col=(233, 225, 213), ss=2):
     return np.asarray(img).astype(np.float32)
 
 
+def linen(w, h, seed=5, base_col=(214, 199, 176), pitch=5.0, ss=2):
+    """Linho bege em trama simples: fios irregulares (slubs), sombreamento
+    cilíndrico de cada fio e dobras suaves do tecido sob luz de janela."""
+    rng = np.random.default_rng(seed)
+    H2, W2 = h * ss, w * ss
+    p = pitch * ss
+    yy, xx = np.mgrid[0:H2, 0:W2].astype(np.float32)
+    # leve ondulação dos fios (tecido nunca é perfeitamente reto)
+    wx = xx + smooth_noise(rng, H2, W2, 90 * ss, 1.6 * ss)
+    wy = yy + smooth_noise(rng, H2, W2, 90 * ss, 1.6 * ss)
+    iu, iv = wx / p, wy / p
+    fu, fv = iu - np.floor(iu), iv - np.floor(iv)
+    ku, kv = np.floor(iu).astype(np.int64), np.floor(iv).astype(np.int64)
+    # brilho e espessura por fio, variando ao longo do comprimento (slubs)
+    nu = int(ku.max() - ku.min() + 3)
+    nv = int(kv.max() - kv.min() + 3)
+    warp_b = rng.normal(0, 1, nu).astype(np.float32)
+    weft_b = rng.normal(0, 1, nv).astype(np.float32)
+    slub_u = smooth_noise(rng, H2, W2, 26 * ss, 1.0)
+    slub_v = smooth_noise(rng, H2, W2, 26 * ss, 1.0)
+    bu = warp_b[ku - ku.min()] * 0.04 + np.maximum(slub_u - 1.0, 0) * 0.16
+    bv = weft_b[kv - kv.min()] * 0.04 + np.maximum(slub_v - 1.0, 0) * 0.16
+    over = ((ku + kv) % 2 == 0)
+    prof_u = np.clip(np.cos((fu - 0.5) * np.pi), 0, 1) ** 0.8  # seção do fio vertical
+    prof_v = np.clip(np.cos((fv - 0.5) * np.pi), 0, 1) ** 0.8  # seção do fio horizontal
+    top = np.where(over, prof_u * (1 + bu), prof_v * (1 + bv))
+    under = np.where(over, prof_v * (1 + bv), prof_u * (1 + bu)) * 0.72
+    weave = np.maximum(top, under)
+    lum = 0.76 + 0.28 * weave
+    # dobras suaves do tecido (luz rasante vinda do alto à esquerda)
+    fold = smooth_noise(rng, H2, W2, 240 * ss, 1.0)
+    gy, gx = np.gradient(fold)
+    lum = lum * (1 + np.clip((-gx * 0.62 - gy * 0.78) * 5.0 * ss, -0.05, 0.05)) + smooth_noise(rng, H2, W2, 400 * ss, 0.015)
+    xn, yn = xx / W2, yy / H2
+    lum = lum * (1.04 - 0.09 * (0.55 * xn + 0.45 * yn))
+    lum = lum + rng.normal(0, 0.012, (H2, W2)).astype(np.float32)
+    col = np.array(base_col, np.float32) * lum[..., None]
+    col = col + smooth_noise(rng, H2, W2, 160 * ss, 1.0)[..., None] * np.array((2.0, 1.0, -1.5), np.float32)
+    img = Image.fromarray(np.clip(col, 0, 255).astype(np.uint8)).resize((w, h), Image.LANCZOS)
+    return np.asarray(img).astype(np.float32)
+
+
+def depth_of_field(arr, center, radius_sharp, max_blur=3.0):
+    """Profundidade de campo de lente macro: nítido no mostrador, desfoque
+    suave e crescente nas bordas do quadro (não altera forma nem cor)."""
+    img = Image.fromarray(np.clip(arr + 0.5, 0, 255).astype(np.uint8))
+    h, w = arr.shape[:2]
+    yy, xx = np.mgrid[0:h, 0:w].astype(np.float32)
+    d = np.sqrt((xx - center[0]) ** 2 + (yy - center[1]) ** 2)
+    k = np.clip((d - radius_sharp) / (0.9 * max(h, w) - radius_sharp), 0, 1)
+    out = arr.copy()
+    levels = [max_blur * f for f in (0.33, 0.66, 1.0)]
+    prev = arr
+    prev_lv = 0.0
+    for lv in levels:
+        b = np.asarray(img.filter(ImageFilter.GaussianBlur(lv))).astype(np.float32)
+        lo, hi = prev_lv / max_blur, lv / max_blur
+        wgt = np.clip((k - lo) / (hi - lo), 0, 1)[..., None]
+        out = np.where(k[..., None] > lo, prev * (1 - wgt) + b * wgt, out)
+        prev, prev_lv = b, lv
+    return out
+
+
 def matte_black(w, h, seed=3, spot=(0.5, 0.33)):
     rng = np.random.default_rng(seed)
     yy, xx = np.mgrid[0:h, 0:w].astype(np.float32)
