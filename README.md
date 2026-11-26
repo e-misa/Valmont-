@@ -4,6 +4,7 @@
 |---|---|---|
 | Coleção Gênese (institucional) | `output/valmont-genese-reels-1080x1920.mp4` | `output/capa-1080x1920.jpg` |
 | Natal: "Presenteie com elegância" | `output/valmont-natal-presente-1080x1920.mp4` | `output/capa-natal-1080x1920.jpg` |
+| Campanha de vendas, 18 s (filmagem real) | `output/valmont-campanha-18s-1080x1920.mp4` | `output/capa-campanha-1080x1920.jpg` |
 
 **Foto para post (feed 4:5):** `output/post-natal-flatlay-1080x1350.jpg`. É um flat lay
 (vista de cima) dos quatro modelos sobre uma fita de veludo bordô. Os relógios são os
@@ -11,7 +12,7 @@ pixels das fotos originais, todos no mesmo tamanho real e só girados no plano d
 A sombra de estúdio de cada foto foi transferida para a nova superfície e as bordas
 foram descontaminadas do cinza do estúdio. Para gerar de novo: `python3 src/post_natal.py`.
 
-Os dois vídeos têm a mesma especificação técnica:
+Os vídeos têm a mesma especificação técnica (a campanha de vendas dura 18 s):
 
 | Especificação | Valor |
 |---|---|
@@ -75,6 +76,35 @@ glockenspiel, pizzicato, guizos e cordas, e um acorde de Sol menor que dá a
 nostalgia natalina. A melodia é composta para o projeto e não reproduz nenhuma
 canção existente.
 
+## Vídeo 3: Campanha de vendas (18 s)
+
+A campanha mistura a **filmagem real enviada pela marca**
+(`assets/videos/valmont-referencias.mov`: mão segurando cada modelo, vista lateral,
+fecho e os relógios sobre a mesa) com closes e composições feitos a partir das fotos de
+estúdio sobre pedra clara (`src/flatlay.py`). A filmagem é usada no tempo real, só
+recortada e ampliada, sem redesenho nem interpolação. Os cortes são secos e caem no
+tempo da música, por isso nunca há dois relógios sobrepostos no mesmo quadro. O
+anúncio do concorrente serviu só como referência de ritmo e de faixa de preço. Nada
+dele entra no vídeo nem no repositório.
+
+| Tempo | Cena | Texto na tela |
+|---|---|---|
+| 0–1 s | Macro do **Gold** sobre pedra clara | VALMONT · *A elegância está nos detalhes.* |
+| 1–2 s | Filmagem real: mão segurando o Gold | (mesmo título) |
+| 2–4 s | **Silver**: na mão, depois sobre a mesa | GÊNESE · SILVER |
+| 4–6 s | **Gold**: mostrador sobre a mesa, depois o fecho | GÊNESE · GOLD |
+| 6–8 s | **Rosé**: de frente na mão, depois de lado | GÊNESE · ROSÉ |
+| 8–10 s | **Black**: na mão, depois macro de estúdio | GÊNESE · BLACK |
+| 10–13 s | Os quatro modelos e uma faixa preta | COLEÇÃO GÊNESE · **R$ 180,00 cada** |
+| 13–16 s | Gold e Black lado a lado | LEVE 2 OU MAIS · **GANHE 10% OFF** |
+| 16–18 s | Os quatro modelos e a assinatura | VALMONT · *A simplicidade é a base da elegância.* · **COMPRE AGORA** |
+
+As etiquetas dos modelos ficam numa faixa fixa no topo (y 290–362). Cada trecho de
+filmagem foi escolhido para a caixa do relógio nunca passar por baixo delas.
+
+Não há relógio no pulso porque não existe filmagem ou foto real disso. Também não há
+preço "de/por", contagem regressiva nem prazo, já que nenhum deles foi informado.
+
 ## Trilha sonora
 
 A trilha do vídeo 1 (`src/music.py`) foi **composta e sintetizada neste projeto**, nota por nota,
@@ -94,6 +124,7 @@ Requisitos: `python3` com `numpy` e `pillow`, e `ffmpeg`.
 ./build.sh                                   # os dois vídeos (ou: ./build.sh genese | ./build.sh natal)
 python3 src/render.py --still 1.0 8.5 14.9   # quadros PNG de conferência do vídeo 1 (em build/)
 python3 src/render_natal.py --still 0.5 9    # quadros PNG de conferência do vídeo de Natal
+python3 src/render_campanha.py --still 0.5 11  # quadros PNG de conferência da campanha
 ```
 
 ## Estrutura
@@ -108,5 +139,9 @@ src/render.py          vídeo 1 (Coleção Gênese)
 src/music_natal.py     trilha original de Natal
 src/render_natal.py    vídeo 2 (Natal)
 src/post_natal.py      foto flat lay de Natal para o feed
+src/flatlay.py         composição de estúdio (relógio real sobre pedra, sombras, bordas)
+src/music_campanha.py  trilha original da campanha de 18 s
+src/render_campanha.py vídeo 3 (campanha de vendas)
+assets/videos/         filmagem real dos quatro modelos enviada pela marca
 output/         vídeo final e capa
 ```
